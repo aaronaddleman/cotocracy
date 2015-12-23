@@ -2,17 +2,19 @@ require './project'
 # require 'spec_helper'
  
 describe Project do
-  before :each do
-    @helloWorld = Project.new(:name => "hello world", :description => "making the world a better place")
-  end
+  context "error handling" do
+    let(:helloWorld){Project.new}
 
-  describe "#new" do
-    it "accept name" 
-    it "accept description" 
-  end
+    describe "#new" do
+      it "accept name" do
+        helloWorld.name = "hello world"
+        expect(helloWorld.name).to eq("hello world")
+      end
 
-  describe "#delete" do
-    it "asks for name"
-    it "confirms delete"
+      it "accept description" do
+        helloWorld.description = "making the world a better place"
+        expect(helloWorld.description).to eq("making the world a better place")
+      end
+    end
   end
 end
