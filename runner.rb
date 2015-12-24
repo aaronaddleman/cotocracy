@@ -46,7 +46,7 @@ class Runner
       # log the command
       puts "running #{command} @ #{instance}"
       # run the command
-      # bashremote["#{command}"]
+      bashremote["#{command}"]
       
       @logfile.info("-----------------------")
     end
