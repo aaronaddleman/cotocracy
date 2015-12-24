@@ -1,8 +1,7 @@
-require './project'
-# require 'spec_helper'
+require_relative 'project'
  
 describe Project do
-  context "error handling" do
+  context "project" do
     let(:helloWorld){Project.new}
 
     describe "#new" do

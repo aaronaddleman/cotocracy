@@ -2,7 +2,7 @@ require 'logger'
 require 'open3'
 
 class Task
-  attr_accessor :name, :commands, :status
+  attr_accessor :name, :type, :command, :status
 
   #logging
   LOGGER = Logger.new('log_file.log')  
@@ -12,8 +12,14 @@ class Task
   #shell
   BASH_PATH = "/bin/bash"
 
-  def initialize
-    @commands = Array.new
+  def initialize(name, type, command)
+    @name = name
+    @type = type
+    @command = command
+  end
+
+  def add_command(command)
+    @command = command
   end
 
   def execute(command)
@@ -34,8 +40,8 @@ class Task
   end
 end
 
-t = Task.new()
-# testing package search
-t.execute("apt-cache search sinatra")
-# testing error output
-t.execute("nocommand")
+# t = Task.new()
+# # testing package search
+# t.execute("apt-cache search sinatra")
+# # testing error output
+# t.execute("nocommand")
