@@ -11,7 +11,8 @@ class Runner
   end
 
   #servers
-  SERVER = "54.158.155.138"
+  # SERVER = "54.158.155.138"
+  SERVER = "10.0.1.172"
   #shell
   BASH_PATH = "/bin/bash"
 
@@ -29,8 +30,15 @@ class Runner
       end
     end
 
-    # bashremote["#{command}"]
+    if command.match(/%%(.*)%%/)
+      command.match(/%%(.*)%%/).captures.each do |substrings|
+        command = command.gsub(/%%.*%%/, @environment.variables[substrings])
+      end
+    end
+
     puts "running #{command}"
+    bashremote["#{command}"]
+    
     @logfile.info("-----------------------")
   end
 end

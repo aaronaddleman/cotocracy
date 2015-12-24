@@ -4,6 +4,5 @@ class Job
   def initialize(opts={})
     @name = opts[:name]
     @tasks = opts[:tasks]
-    @environment = opts[:environment]
   end
 end

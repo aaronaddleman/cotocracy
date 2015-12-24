@@ -9,8 +9,11 @@ class Task
     @command = opts[:command]
   end
 
-  def add_command(command)
-    @command = command
+  def add_localfile(opts={})
+    path = opts[:path]
   end
+  # def add_command(command)
+  #   @command = command
+  # end
 
 end

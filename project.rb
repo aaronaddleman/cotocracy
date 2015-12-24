@@ -17,13 +17,13 @@ class Project
   end
 
   def add_job(item)
-    item.tasks.each do |tasks|
-      if tasks.command.match(/%%(.*)%%/)
-        tasks.command.match(/%%(.*)%%/).captures.each do |substrings|
-          tasks.command = tasks.command.gsub(/%%.*%%/, item.environment.variables[substrings])
-        end
-      end
-    end
+    # item.tasks.each do |tasks|
+    #   if tasks.command.match(/%%(.*)%%/)
+    #     tasks.command.match(/%%(.*)%%/).captures.each do |substrings|
+    #       tasks.command = tasks.command.gsub(/%%.*%%/, item.environment.variables[substrings])
+    #     end
+    #   end
+    # end
     @jobs[last_job_number] = item
   end
 end

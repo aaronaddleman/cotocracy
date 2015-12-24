@@ -9,48 +9,66 @@ phpApp = Project.new(:name => "The Hello World PHP App")
 # add the description
 phpApp.description = "Maintain Content for HelloWorld behind Load Balancer"
 
-# add environment
+# content
+PHPAPP = <<-eos
+<?php
+header("Content-Type: text/plain");
+echo "Hello, world!\n";
+eos
+
+# add dev environment
 dev = Environment.new(:name => "development", :type => :development)
-dev.add_variable(:keyname => "helloworld", :role => "content", :value => "hello world this is the php app")
-dev.add_variable(:keyname => "appdir", :role => "path", :value => "/opt/helloworld")
+dev.add_variable(:keyname => "appdir", :role => "path", :value => "/var/www/html")
+dev.add_variable(:keyname => "appfile", :role => "content", :value => PHPAPP)
 dev.add_variable(:keyname => "frontend1", :role => "instance", :value =>  {:fqdn => "frontend-001.internal.dev", :ipaddress => "54.158.155.138"})
 dev.add_variable(:keyname => "frontend2", :role => "instance", :value =>  {:fqdn => "frontend-002.internal.dev", :ipaddress => "54.92.232.190"})
 
+# add prod environment
+prod = Environment.new(:name => "production", :type => :production)
+prod.add_variable(:keyname => "helloworld", :role => "content", :value => "hello world this is the php app")
+prod.add_variable(:keyname => "appdir", :role => "path", :value => "/var/www/helloworld_prod")
+prod.add_variable(:keyname => "frontend1", :role => "instance", :value =>  {:fqdn => "frontend-001.internal.dev", :ipaddress => "54.158.155.138"})
+prod.add_variable(:keyname => "frontend2", :role => "instance", :value =>  {:fqdn => "frontend-002.internal.dev", :ipaddress => "54.92.232.190"})
+
+
 # add installation tasks
 installation_tasks = [
-  Task.new(:name => "install_php", :command => "hostname"),
-  Task.new(:name => "install_php", :command => "ls %%appdir-path%%"),
-  Task.new(:name => "install_php", :command => "dig google.com")
+  Task.new(:name => "install_lamp_apt_update", :command => "apt-get update"),
+  Task.new(:name => "install_apache", :command => "apt-get install apache2 --assume-yes"),
+  Task.new(:name => "install_php", :command => "apt-get install php5 libapache2-mod-php5 php5-mcrypt --assume-yes"),
+  Task.new(:name => "start_apache", :command => "service apache start"),
+  Task.new(:name => "create_content", :command => "echo -n '%%appfile-content%%' > /var/www/html/index.php"),
+  Task.new(:name => "remote_file", :command => "rm /var/www/html/index.html")
 ]
 
 # add config_tasks
 config_tasks = [
-  Task.new(:name => "create logging directory", :command => "mkdir %%appdir-path%%/log")
+  Task.new(:name => "create logging directory", :command => "mkdir -p %%appdir-path%%/log")
 ]
 
 # add a job for installation using installation_tasks and dev environment variables
-install_deps = Job.new(:name => 'install deps for dev', 
-                       :tasks => installation_tasks, 
-                       :environment => dev)
+install_deps = Job.new(:name => 'install deps', 
+                       :tasks => installation_tasks)
 
 # add a job for configuration
 config = Job.new(:name => 'configure application',
-                 :tasks => config_tasks,
-                 :environment => dev)
+                 :tasks => config_tasks)
 
 # add tasks to project
 phpApp.add_job(install_deps)
 phpApp.add_job(config)
 
 # create runner object
-runner = Runner.new()
+runner_prod = Runner.new(:environment => prod)
+runner_dev = Runner.new(:environment => dev)
 
 # execute tasks
 phpApp.jobs.each do |id,job|
 
   job.tasks.each do |task|
-    runner.execute(task.command)
+    runner_dev.execute(task.command)
   end
+
 end
 
 # puts phpApp.jobs
