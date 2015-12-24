@@ -132,3 +132,4 @@ ruby org_project.rb
 
 * Add support for detecting if command is needed before executing (a fetch of information before running?)
 * Querying of hosts by role
+* Add SSH parallel execution of commands
