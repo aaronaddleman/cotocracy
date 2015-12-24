@@ -20,13 +20,12 @@ eos
 dev = Environment.new(:name => "development", :type => :development)
 dev.add_variable(:keyname => "appdir", :role => "path", :value => "/var/www/html")
 dev.add_variable(:keyname => "appfile", :role => "content", :value => PHPAPP)
-dev.add_variable(:keyname => "frontend1", :role => "instance", :value =>  {:fqdn => "frontend-001.internal.dev", :ipaddress => "54.158.155.138"})
-dev.add_variable(:keyname => "frontend2", :role => "instance", :value =>  {:fqdn => "frontend-002.internal.dev", :ipaddress => "54.92.232.190"})
+dev.add_variable(:keyname => "frontend1", :role => "instance", :value =>  {:fqdn => "frontend-002.internal.dev", :ipaddress => "10.0.1.172"})
 
 # add prod environment
 prod = Environment.new(:name => "production", :type => :production)
-prod.add_variable(:keyname => "helloworld", :role => "content", :value => "hello world this is the php app")
-prod.add_variable(:keyname => "appdir", :role => "path", :value => "/var/www/helloworld_prod")
+prod.add_variable(:keyname => "appdir", :role => "path", :value => "/var/www/html")
+prod.add_variable(:keyname => "appfile", :role => "content", :value => PHPAPP)
 prod.add_variable(:keyname => "frontend1", :role => "instance", :value =>  {:fqdn => "frontend-001.internal.dev", :ipaddress => "54.158.155.138"})
 prod.add_variable(:keyname => "frontend2", :role => "instance", :value =>  {:fqdn => "frontend-002.internal.dev", :ipaddress => "54.92.232.190"})
 
@@ -50,13 +49,9 @@ config_tasks = [
 install_deps = Job.new(:name => 'install deps', 
                        :tasks => installation_tasks)
 
-# add a job for configuration
-config = Job.new(:name => 'configure application',
-                 :tasks => config_tasks)
 
 # add tasks to project
 phpApp.add_job(install_deps)
-phpApp.add_job(config)
 
 # create runner object
 runner_prod = Runner.new(:environment => prod)
@@ -66,9 +61,7 @@ runner_dev = Runner.new(:environment => dev)
 phpApp.jobs.each do |id,job|
 
   job.tasks.each do |task|
-    runner_dev.execute(task.command)
+    runner_prod.execute(task.command)
   end
 
 end
-
-# puts phpApp.jobs
