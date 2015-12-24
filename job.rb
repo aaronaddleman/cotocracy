@@ -1,7 +1,9 @@
 class Job
-  attr_accessor :name, :env, :tasks
+  attr_accessor :name, :tasks, :environment
 
-  def initalize(name)
-    @name = name
+  def initialize(opts={})
+    @name = opts[:name]
+    @tasks = opts[:tasks]
+    @environment = opts[:environment]
   end
 end
