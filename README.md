@@ -75,20 +75,9 @@ phpApp.add_job(install_deps)
 Now the last part, creating and executing the tasks stored in the jobs, with a selected environment:
 
 ```
-# creating the runners
-runner_prod = Runner.new(:environment => prod)
-runner_dev = Runner.new(:environment => dev)
-
-# executing the runners
-phpApp.jobs.each do |id,job|
-  job.tasks.each do |task|
-    runner_prod.execute(task.command)
-  end
-
-  job.tasks.each do |task|
-    runner_dev.execute(task.command)
-  end
-end
+# creating the runners and execute
+runner_prod = Runner.new(:environment => prod, :project => phpApp).execute
+runner_dev = Runner.new(:environment => dev, :project => phpApp).execute
 ```
 
 ## Setup
@@ -133,3 +122,4 @@ ruby org_project.rb
 * Add support for detecting if command is needed before executing (a fetch of information before running?)
 * Querying of hosts by role
 * Add SSH parallel execution of commands
+* Add test attribute for tasks to find out if they need to be run or not
