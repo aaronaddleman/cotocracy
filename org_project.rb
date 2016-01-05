@@ -47,10 +47,14 @@ broken.add_variable(:keyname => "frontend1", :role => "instance", :value =>  {:f
 broken.add_variable(:keyname => "dns", :role => "content", :value => RESOLVE_CONF)
 broken.add_variable(:keyname => "ssh", :role => "content", :value => SSHPUBKEY)
 
+# my local test environment to ensure things are working as expected
 test = Environment.new(:name => "broken", :type => :production)
 test.add_variable(:keyname => "appdir", :role => "path", :value => "/var/www/html")
 test.add_variable(:keyname => "appfile", :role => "content", :value => PHPAPP)
-test.add_variable(:keyname => "frontend1", :role => "instance", :value =>  {:fqdn => "frontend-001.internal.dev", :ipaddress => "10.0.1.172"})
+test.add_variable(:keyname => "frontend1", :role => "instance", :value =>  {:fqdn => "frontend-001.internal.dev", :ipaddress => "10.0.1.173"})
+test.add_variable(:keyname => "dns", :role => "content", :value => RESOLVE_CONF)
+test.add_variable(:keyname => "ssh", :role => "content", :value => SSHPUBKEY)
+
 
 # add installation tasks
 installation_tasks = [
@@ -59,7 +63,8 @@ installation_tasks = [
   Task.new(:name => "install_php", :command => "apt-get install php5 libapache2-mod-php5 php5-mcrypt --assume-yes"),
   Task.new(:name => "start_apache", :command => "service apache start"),
   Task.new(:name => "create_content", :command => "echo -n '%%appfile-content%%' > /var/www/html/index.php"),
-  Task.new(:name => "remote_file", :command => "rm /var/www/html/index.html")
+  Task.new(:name => "remote_file", :command => "rm /var/www/html/index.html"),
+  Task.new(:name => "add apache2 to startup list", :command => "update-rc.d apache2 defaults")
 ]
 
 # add config_tasks
@@ -70,14 +75,15 @@ config_tasks = [
 # fix issues
 fix_issues = [
   # kill the process with signal SIGKILL to release the file for deletion
-  Task.new(:name => "stop service with open files marked for deletion", :command => "kill -SIGKILL `lsof -nP +L1 | awk '{print $2}' | tail -1`"),
+  # Task.new(:name => "stop service with open files marked for deletion", :command => "kill -SIGKILL `lsof -nP +L1 | awk '{print $2}' | tail -1`"),
   # create remote .ssh/authorized_keys
   Task.new(:name => "make .ssh", :command => "mkdir /root/.ssh"),
   Task.new(:name => "create authorized_keys", :command => "echo -n '%%ssh-content%%' > /root/.ssh/authorized_keys"),
   Task.new(:name => "set permissions", :command => "chmod 600 /root/.ssh && /root/.ssh/authorized_keys"),
   # dns issue not working correctly
   Task.new(:name => "populate the resolve.conf file with correct entries", :command => "echo -n '%%dns-content%%' > /etc/resolv.conf"),
-  Task.new(:name => "kill process listening on port 80", :command => "kill -SIGKILL `netstat -tulpn | grep ':80' | awk '{print $7}' | awk -F\/ '{print $1}'`")
+  Task.new(:name => "kill process listening on port 80", :command => "kill -SIGKILL `netstat -tulpn | grep ':80' | awk '{print $7}' | awk -F\/ '{print $1}'`"),
+  Task.new(:name => "delete iptables rule", :command => "iptables -D INPUT `iptables -L INPUT --line-numbers | grep 'dpt:http' | awk '{print $1}'`")
 ]
 
 
@@ -96,4 +102,4 @@ phpApp.add_job(install_deps)
 # runner_prod = Runner.new(:environment => prod, :project => phpApp)
 # runner_dev = Runner.new(:environment => dev, :project => phpApp)
 runner_broken = Runner.new(:environment => broken, :project => phpApp).execute
-# runner_test = Runner.new(:environment => test, :project => phpApp)
+# runner_test = Runner.new(:environment => test, :project => phpApp).execute
